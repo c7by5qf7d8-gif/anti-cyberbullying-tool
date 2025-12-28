@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Anti-Cyberbullying Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            min-height: 100vh;
+            color: #f5f5f5;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.25) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(178, 34, 34, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(139, 0, 0, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #161616, #1c1c1c);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(10, 10, 10, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(178, 34, 34, 0.6), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.8);
+            color: #ff4757;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #cccccc;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: #1c1c1c;
+            border: 1px solid #2c2c2c;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease-in-out;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            font-weight: bold;
+        }
+
+        .nav-tab::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.4) 0%, rgba(178, 34, 34, 0.2) 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            z-index: 0;
+        }
+
+        .nav-tab:hover::before {
+            opacity: 1;
+        }
+
+        .nav-tab:hover {
+            background: #292929;
+            color: #ff4757;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .nav-tab span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 50%, #ff6b7a 100%);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .content-panel {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(10, 10, 10, 0.4), 0 0 0 1px rgba(255, 71, 87, 0.1);
+            margin-bottom: 30px;
+            display: none;
+            border: 1px solid rgba(255, 71, 87, 0.1);
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+
+        .content-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff4757, #ff6b7a, #ff4757);
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .content-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid rgba(226, 232, 240, 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            background: rgba(10, 10, 10, 0.6);
+            color: white;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #ff4757;
+            box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.2);
+        }
+
+        .text-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .classify-btn {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 50%, #ff6b7a 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .classify-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .classify-btn:hover::before {
+            left: 100%;
+        }
+
+        .classify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
+            background: linear-gradient(135deg, #ff5722 0%, #ff4757 50%, #ff7043 100%);
+        }
+
+        .classify-btn:disabled {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.8) 0%, rgba(73, 80, 87, 0.8) 100%);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
+            border-radius: 12px;
+            border-left: 5px solid #ff4757;
+            box-shadow: 0 2px 10px rgba(255, 71, 87, 0.1);
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .severity-mild { 
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); 
+            color: #1b5e20; 
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+        .severity-repeated { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffecb3 100%); 
+            color: #e65100; 
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        }
+        .severity-targeted { 
+            background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%); 
+            color: #b71c1c; 
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+        }
+        .severity-severe { 
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
+            color: #721c24; 
+            box-shadow: 0 2px 8px rgba(183, 28, 28, 0.4);
+            border: 2px solid #d32f2f;
+        }
+
+        .evidence-log {
+            background: linear-gradient(135deg, rgba(16, 16, 32, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 71, 87, 0.15);
+        }
+
+        .evidence-item:last-child {
+            border-bottom: none;
+        }
+
+        .evidence-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.8) 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #ff4757;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.1);
+        }
+
+        .dashboard-card h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .case-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .case-item {
+            background: linear-gradient(135deg, rgba(16, 16, 32, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .case-item:hover {
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .case-id {
+            font-weight: 600;
+            color: #ff4757;
+        }
+
+        .case-timestamp {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .case-text {
+            background: linear-gradient(135deg, rgba(10, 10, 10, 0.8) 0%, rgba(26, 26, 46, 0.6) 100%);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            color: white;
+        }
+
+        .actions-taken {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .info-content {
+            line-height: 1.6;
+        }
+
+        .info-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.8) 100%);
+            border-radius: 12px;
+            border-left: 5px solid #ff4757;
+            box-shadow: 0 2px 10px rgba(255, 71, 87, 0.1);
+        }
+
+        .info-section h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section h4 {
+            color: #ff4757;
+            margin-bottom: 10px;
+            margin-top: 15px;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .info-section p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #ff4757;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2rem; }
+            .content-panel { padding: 20px; }
+            .nav-tabs { flex-wrap: wrap; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .form-row { flex-direction: column; }
+            .form-actions { flex-direction: column; gap: 10px; }
+        }
+
+        /* Report Form Styles */
+        .report-form {
+            max-width: 100%;
+        }
+
+        .form-toggle {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.2) 0%, rgba(255, 71, 87, 0.1) 100%);
+            border-radius: 8px;
+        }
+
+        .toggle-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: white;
+        }
+
+        .toggle-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(16, 16, 32, 0.5) 0%, rgba(22, 33, 62, 0.4) 100%);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 71, 87, 0.1);
+        }
+
+        .form-section h4 {
+            margin-bottom: 15px;
+            color: #ff4757;
+            font-size: 1.1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+            background: linear-gradient(135deg, rgba(10, 10, 10, 0.6) 0%, rgba(26, 26, 46, 0.5) 100%);
+            color: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff4757;
+            box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.1);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+            cursor: pointer;
+            color: white;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .classify-btn.secondary {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.9) 0%, rgba(73, 80, 87, 0.8) 100%);
+            color: white;
+        }
+
+        .classify-btn.secondary:hover {
+            background: linear-gradient(135deg, rgba(73, 80, 87, 0.9) 0%, rgba(52, 58, 64, 0.8) 100%);
+        }
+
+        .classify-btn.primary {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, rgba(200, 230, 201, 0.9) 0%, rgba(165, 214, 167, 0.8) 100%);
+            color: #1b5e20;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #4caf50;
+            margin-top: 20px;
+        }
+
+        .success-message h4 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🛡️ AI Anti-Cyberbullying Detection System</h1>
+            <p>Professional AI-powered system for detecting and managing online harassment and threats</p>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('classifier')"><span>Text Classifier</span></button>
+            <button class="nav-tab" onclick="switchTab('report')"><span>Report</span></button>
+            <button class="nav-tab" onclick="switchTab('dashboard')"><span>Admin Dashboard</span></button>
+            <button class="nav-tab" onclick="switchTab('information')"><span>Information Hub</span></button>
+        </nav>
+
+        <!-- Text Classifier Panel -->
+        <div id="classifier" class="content-panel active">
+            <h2>Text Classification</h2>
+            <div class="input-section">
+                <label class="input-label">Enter text to analyze for cyberbullying:</label>
+                <textarea 
+                    id="textInput" 
+                    class="text-input" 
+                    placeholder="Type or paste the message you want to analyze here..."
+                ></textarea>
+                <button class="classify-btn" onclick="classifyText()">
+                    Classify Text
+                    <span id="loadingSpinner" class="loading" style="display: none;"></span>
+                </button>
+            </div>
+
+            <div id="resultsSection" class="results-section" style="display: none;">
+                <h3>Classification Results</h3>
+                <div id="severityResult"></div>
+                <div id="suggestedActions"></div>
+                
+                <div class="evidence-log">
+                    <h4>Evidence Log Entry</h4>
+                    <div id="evidenceDetails"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard Panel -->
+        <div id="dashboard" class="content-panel">
+            <h2>Admin Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>📊 Statistics</h3>
+                    <div class="evidence-item">
+                        <span>Total Cases:</span>
+                        <span id="totalCases">1,247</span>
+                    </div>
+                    <div class="evidence-item">
+                        <span>Severe Cases:</span>
+                        <span id="severeCases">89</span>
+                    </div>
+                    <div class="evidence-item">
+                        <span>Cases Today:</span>
+                        <span id="todayCases">23</span>
+                    </div>
+                    <div class="evidence-item">
+                        <span>Actions Taken:</span>
+                        <span id="actionsTaken">156</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>⚡ Quick Actions</h3>
+                    <button class="classify-btn" onclick="generateReport()" style="width: 100%; margin: 5px 0;">Generate Report</button>
+                    <button class="classify-btn" onclick="exportData()" style="width: 100%; margin: 5px 0;">Export Data</button>
+                    <button class="classify-btn" onclick="clearLogs()" style="width: 100%; margin: 5px 0;">Clear Old Logs</button>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>🚨 Recent Flagged Cases</h3>
+                <div class="case-list" id="casesList"></div>
+            </div>
+        </div>
+
+        <!-- Information Panel -->
+        <div id="information" class="content-panel">
+            <h2>Information Hub</h2>
+            <div class="info-content">
+                <div class="info-section">
+                    <h3>🔍 What are Cybercrimes?</h3>
+                    <p>Criminal activities using digital platforms to harm, threaten, or intimidate others:</p>
+                    <ul>
+                        <li><strong>Online Harassment:</strong> Repeated threatening or offensive messages</li>
+                        <li><strong>Cyberstalking:</strong> Persistent unwanted digital contact</li>
+                        <li><strong>Defamation:</strong> Spreading false information to damage reputation</li>
+                        <li><strong>Doxxing:</strong> Publishing private information maliciously</li>
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <h3>⚖️ Legal Framework in India</h3>
+                    <p>Key laws protecting against cyberbullying:</p>
+                    <ul>
+                        <li><strong>IT Act 2000 (Sec 67):</strong> Obscene/offensive content - 3 years + ₹5 lakh fine</li>
+                        <li><strong>IPC Sec 499:</strong> Criminal defamation - 2 years + fine</li>
+                        <li><strong>IPC Sec 506:</strong> Criminal intimidation - 2-7 years</li>
+                        <li><strong>IPC Sec 509:</strong> Insulting women's modesty - 3 years + fine</li>
+                        <li><strong>POCSO Act:</strong> Enhanced penalties for crimes against minors</li>
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <h3>🛡️ Rights and Safety Measures</h3>
+                    <h4>Your Rights:</h4>
+                    <ul>
+                        <li>Privacy and dignity protection online</li>
+                        <li>Report cyberbullying to authorities</li>
+                        <li>Seek legal remedy and compensation</li>
+                        <li>Request content removal from platforms</li>
+                    </ul>
+                    
+                    <h4>Immediate Actions:</h4>
+                    <ul>
+                        <li><strong>Document:</strong> Screenshot evidence immediately</li>
+                        <li><strong>Block:</strong> Prevent further contact</li>
+                        <li><strong>Report:</strong> Use platform reporting tools</li>
+                        <li><strong>Don't Engage:</strong> Avoid responding to provocations</li>
+                    </ul>
+                    
+                    <h4>Emergency Contacts:</h4>
+                    <ul>
+                        <li><strong>Cyber Crime Helpline:</strong> 1930</li>
+                        <li><strong>Women Helpline:</strong> 181</li>
+                        <li><strong>Online Portal:</strong> cybercrime.gov.in</li>
+                        <li><strong>Emergency:</strong> 112</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Panel -->
+        <div id="report" class="content-panel">
+            <h2>Report Cyberbullying Incident</h2>
+            
+            <!-- Report Incident Form -->
+            <div class="info-section">
+                <h3>📋 Report Cyberbullying Incident</h3>
+                <form id="reportForm" class="report-form">
+                    <div class="form-toggle">
+                        <label class="toggle-option">
+                            <input type="radio" name="reportType" value="registered" checked onchange="toggleReportType()">
+                            <span>Register & Report</span>
+                        </label>
+                        <label class="toggle-option">
+                            <input type="radio" name="reportType" value="anonymous" onchange="toggleReportType()">
+                            <span>Report Anonymously</span>
+                        </label>
+                    </div>
+
+                    <div id="userDetails" class="form-section">
+                        <h4>Personal Information</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" id="fullName" name="fullName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="+91 XXXXX XXXXX" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="age">Age</label>
+                                <select id="age" name="age">
+                                    <option value="">Select Age Group</option>
+                                    <option value="under-18">Under 18</option>
+                                    <option value="18-25">18-25</option>
+                                    <option value="26-35">26-35</option>
+                                    <option value="36-50">36-50</option>
+                                    <option value="above-50">Above 50</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Incident Details</h4>
+                        <div class="form-group">
+                            <label for="platform">Platform/Website *</label>
+                            <select id="platform" name="platform" required>
+                                <option value="">Select Platform</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="twitter">Twitter/X</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="telegram">Telegram</option>
+                                <option value="snapchat">Snapchat</option>
+                                <option value="linkedin">LinkedIn</option>
+                                <option value="youtube">YouTube</option>
+                                <option value="email">Email</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="incidentType">Type of Harassment *</label>
+                            <select id="incidentType" name="incidentType" required>
+                                <option value="">Select Type</option>
+                                <option value="mild">Mild Harassment (Name-calling, Insults)</option>
+                                <option value="repeated">Repeated Harassment (Persistent targeting)</option>
+                                <option value="targeted">Targeted Abuse (Personal attacks, Defamation)</option>
+                                <option value="severe">Severe Harassment (Threats, Sexual abuse)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="incidentDescription">Describe the Incident *</label>
+                            <textarea id="incidentDescription" name="incidentDescription" 
+                                placeholder="Provide details about what happened, when it occurred, and any relevant context..." 
+                                rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="perpetratorInfo">Perpetrator Information (if known)</label>
+                            <textarea id="perpetratorInfo" name="perpetratorInfo" 
+                                placeholder="Username, profile details, or any identifying information about the person(s) involved..." 
+                                rows="2"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="evidence">Evidence (Screenshots, Links, etc.)</label>
+                            <input type="file" id="evidence" name="evidence" multiple accept="image/*,.pdf,.doc,.docx">
+                            <small>Upload screenshots, documents, or other evidence (Max 10MB per file)</small>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" name="policeAction" value="yes">
+                                I want to file a police complaint
+                            </label>
+                            <label>
+                                <input type="checkbox" name="urgentCase" value="yes">
+                                This is an urgent/emergency case
+                            </label>
+                            <label>
+                                <input type="checkbox" name="consent" value="yes" required>
+                                I consent to data processing for investigation purposes *
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="classify-btn secondary" onclick="clearForm()">Clear Form</button>
+                        <button type="submit" class="classify-btn primary">Submit Report</button>
+                    </div>
+                </form>
+
+                <div id="reportSuccess" class="success-message" style="display: none;">
+                    <h4>✅ Report Submitted Successfully</h4>
+                    <p>Your report has been recorded. Case ID: <span id="generatedCaseId"></span></p>
+                    <p>If you provided contact details, we'll reach out within 24 hours.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for demonstration
+        let evidenceLog = [];
+        let caseCounter = 1000;
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all panels
+            document.querySelectorAll('.content-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected panel
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+
+            // Load dashboard data if dashboard tab is selected
+            if (tabName === 'dashboard') {
+                loadDashboardData();
+            }
+        }
+
+        // Text classification functionality
+        function classifyText() {
+            const textInput = document.getElementById('textInput');
+            const text = textInput.value.trim();
+            
+            if (!text) {
+                alert('Please enter some text to classify.');
+                return;
+            }
+
+            // Show loading state
+            const btn = document.querySelector('.classify-btn');
+            const spinner = document.getElementById('loadingSpinner');
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+
+            // Simulate AI processing delay
+            setTimeout(() => {
+                const result = simulateClassification(text);
+                displayResults(result, text);
+                
+                // Hide loading state
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }, 1500);
+        }
+
+        // Simulate AI classification (enhanced with comprehensive profanity and threat detection)
+        function simulateClassification(text) {
+            const words = text.toLowerCase();
+            let severity = 'normal';
+            let confidence = 0;
+
+            // Comprehensive threat and profanity detection
+            const severeThreats = [
+                'kill', 'die', 'death', 'murder', 'suicide', 'hang yourself', 'shoot yourself',
+                'jump off', 'overdose', 'cut yourself', 'hurt yourself', 'end your life',
+                'take your life', 'kill yourself', 'go die', 'should die', 'deserve to die',
+                'bomb', 'terrorist', 'rape', 'sexual assault', 'molest'
+            ];
+
+            const targetedAbuse = [
+                'hate you', 'disgusting', 'worthless', 'pathetic', 'failure', 'loser',
+                'nobody likes you', 'everyone hates you', 'waste of space', 'piece of shit',
+                'go to hell', 'fuck you', 'bitch', 'whore', 'slut', 'cunt', 'bastard',
+                'asshole', 'dickhead', 'motherfucker', 'son of a bitch', 'retard', 'idiot',
+                'moron', 'stupid', 'dumbass', 'freak', 'weirdo'
+            ];
+
+            const repeatedHarassment = [
+                'annoying', 'irritating', 'pest', 'creep', 'stalker', 'following me',
+                'won\'t leave me alone', 'harassment', 'bothering', 'jerk', 'ass',
+                'damn', 'hell', 'shut up', 'get lost', 'go away', 'leave me alone'
+            ];
+
+            const mildHarassment = [
+                'weird', 'strange', 'odd', 'boring', 'lame', 'dumb', 'silly',
+                'childish', 'immature', 'uncool', 'not funny', 'cringe'
+            ];
+
+            // Check for severe threats (highest priority)
+            for (let threat of severeThreats) {
+                if (words.includes(threat)) {
+                    severity = 'severe';
+                    confidence = Math.random() * 0.1 + 0.9; // 90-100%
+                    break;
+                }
+            }
+
+            // Check for targeted abuse
+            if (severity === 'normal') {
+                for (let abuse of targetedAbuse) {
+                    if (words.includes(abuse)) {
+                        severity = 'targeted';
+                        confidence = Math.random() * 0.15 + 0.8; // 80-95%
+                        break;
+                    }
+                }
+            }
+
+            // Check for repeated harassment
+            if (severity === 'normal') {
+                for (let harassment of repeatedHarassment) {
+                    if (words.includes(harassment)) {
+                        severity = 'repeated';
+                        confidence = Math.random() * 0.15 + 0.7; // 70-85%
+                        break;
+                    }
+                }
+            }
+
+            // Check for mild harassment
+            if (severity === 'normal') {
+                for (let mild of mildHarassment) {
+                    if (words.includes(mild)) {
+                        severity = 'mild';
+                        confidence = Math.random() * 0.2 + 0.6; // 60-80%
+                        break;
+                    }
+                }
+            }
+
+            // Additional context-based detection
+            if (severity === 'normal') {
+                // Check for combinations that might indicate bullying
+                if ((words.includes('you') && words.includes('are') && words.includes('stupid')) ||
+                    (words.includes('nobody') && words.includes('cares')) ||
+                    (words.includes('everyone') && words.includes('thinks')) ||
+                    (words.includes('you') && words.includes('should'))) {
+                    severity = 'targeted';
+                    confidence = 0.75;
+                }
+            }
+
+            return { severity, confidence, text };
+        }
+
+        // Display classification results
+        function displayResults(result, originalText) {
+            const resultsSection = document.getElementById('resultsSection');
+            const severityResult = document.getElementById('severityResult');
+            const suggestedActions = document.getElementById('suggestedActions');
+            const evidenceDetails = document.getElementById('evidenceDetails');
+
+            resultsSection.style.display = 'block';
+
+            // Display severity
+            const severityLabels = {
+                'normal': 'Normal Text',
+                'mild': 'Mild Harassment',
+                'repeated': 'Repeated Harassment',
+                'targeted': 'Targeted Abuse',
+                'severe': 'Severe Harassment'
+            };
+
+            const severityClasses = {
+                'normal': 'severity-mild',
+                'mild': 'severity-mild',
+                'repeated': 'severity-repeated',
+                'targeted': 'severity-targeted',
+                'severe': 'severity-severe'
+            };
+
+            severityResult.innerHTML = `
+                <div class="severity-badge ${severityClasses[result.severity]}">
+                    ${severityLabels[result.severity]} (${Math.round(result.confidence * 100)}% confidence)
+                </div>
+            `;
+
+            // Display suggested actions
+            const actions = getSuggestedActions(result.severity);
+            suggestedActions.innerHTML = `
+                <h4>Suggested Actions:</h4>
+                <ul>${actions.map(action => `<li>${action}</li>`).join('')}</ul>
+            `;
+
+            // Create evidence log entry
+            const logEntry = {
+                id: ++caseCounter,
+                userId: 'USER_' + Math.floor(Math.random() * 10000),
+                text: originalText,
+                severity: result.severity,
+                confidence: result.confidence,
+                timestamp: new Date().toISOString(),
+                actions: actions
+            };
+
+            evidenceLog.push(logEntry);
+
+            // Display evidence details
+            evidenceDetails.innerHTML = `
+                <div class="evidence-item"><span>Case ID:</span><span>${logEntry.id}</span></div>
+                <div class="evidence-item"><span>User ID:</span><span>${logEntry.userId}</span></div>
+                <div class="evidence-item"><span>Timestamp:</span><span>${new Date(logEntry.timestamp).toLocaleString()}</span></div>
+                <div class="evidence-item"><span>Severity:</span><span>${severityLabels[result.severity]}</span></div>
+                <div class="evidence-item"><span>Actions Taken:</span><span>${actions.join(', ')}</span></div>
+            `;
+        }
+
+        // Get suggested actions based on severity
+        function getSuggestedActions(severity) {
+            const actionMap = {
+                'normal': ['No action required'],
+                'mild': ['Monitor user', 'Send warning notification'],
+                'repeated': ['Temporary suspension', 'Mandatory counseling', 'Alert moderators'],
+                'targeted': ['Account restriction', 'Report to authorities', 'Notify victim support'],
+                'severe': ['Immediate account ban', 'Report to law enforcement', 'Crisis intervention', 'Legal documentation']
+            };
+            
+            return actionMap[severity] || ['Review manually'];
+        }
+
+        // Load dashboard data
+        function loadDashboardData() {
+            displayCases();
+            updateStatistics();
+        }
+
+        // Display cases in dashboard
+        function displayCases() {
+            const casesList = document.getElementById('casesList');
+            
+            // Show recent cases from evidence log
+            const recentCases = evidenceLog.slice(-10).reverse();
+            
+            if (recentCases.length === 0) {
+                casesList.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.7);">No cases recorded yet. Use the Text Classifier to analyze some content.</p>';
+                return;
+            }
+
+            casesList.innerHTML = recentCases.map(case_ => `
+                <div class="case-item">
+                    <div class="case-header">
+                        <span class="case-id">Case #${case_.id}</span>
+                        <span class="case-timestamp">${new Date(case_.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div class="case-text">${case_.text.length > 100 ? case_.text.substring(0, 100) + '...' : case_.text}</div>
+                    <div class="severity-badge ${case_.severity === 'severe' ? 'severity-severe' : case_.severity === 'targeted' ? 'severity-targeted' : case_.severity === 'repeated' ? 'severity-repeated' : 'severity-mild'}">
+                        ${case_.severity.charAt(0).toUpperCase() + case_.severity.slice(1)} (${Math.round(case_.confidence * 100)}%)
+                    </div>
+                    <div class="actions-taken">Actions: ${case_.actions.join(', ')}</div>
+                </div>
+            `).join('');
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const totalCases = evidenceLog.length + 1247; // Base number + new cases
+            const severeCases = evidenceLog.filter(c => c.severity === 'severe').length + 89;
+            const today = new Date().toDateString();
+            const todayCases = evidenceLog.filter(c => new Date(c.timestamp).toDateString() === today).length + 23;
+            const actionsTaken = evidenceLog.reduce((acc, c) => acc + c.actions.length, 0) + 156;
+
+            document.getElementById('totalCases').textContent = totalCases;
+            document.getElementById('severeCases').textContent = severeCases;
+            document.getElementById('todayCases').textContent = todayCases;
+            document.getElementById('actionsTaken').textContent = actionsTaken;
+        }
+
+        // Admin actions
+        function generateReport() {
+            alert('Report generation initiated. You will receive an email with the comprehensive report shortly.');
+        }
+
+        function exportData() {
+            const data = JSON.stringify(evidenceLog, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cyberbullying-cases-' + new Date().toISOString().split('T')[0] + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear old logs? This action cannot be undone.')) {
+                evidenceLog = evidenceLog.filter(c => {
+                    const caseDate = new Date(c.timestamp);
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    return caseDate > thirtyDaysAgo;
+                });
+                loadDashboardData();
+                alert('Old logs cleared successfully.');
+            }
+        }
+
+        // Initialize dashboard on load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatistics();
+        });
+
+        // Report form functionality
+        function toggleReportType() {
+            const reportType = document.querySelector('input[name="reportType"]:checked').value;
+            const userDetails = document.getElementById('userDetails');
+            const inputs = userDetails.querySelectorAll('input, select');
+            
+            if (reportType === 'anonymous') {
+                userDetails.style.display = 'none';
+                inputs.forEach(input => {
+                    input.removeAttribute('required');
+                });
+            } else {
+                userDetails.style.display = 'block';
+                // Re-add required attributes for essential fields
+                document.getElementById('fullName').setAttribute('required', '');
+                document.getElementById('email').setAttribute('required', '');
+                document.getElementById('phone').setAttribute('required', '');
+            }
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all form data?')) {
+                document.getElementById('reportForm').reset();
+                document.getElementById('reportSuccess').style.display = 'none';
+                toggleReportType(); // Reset visibility based on default selection
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitBtn = document.querySelector('.classify-btn.primary');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Submitting Report... <span class="loading"></span>';
+            
+            // Simulate form processing
+            setTimeout(() => {
+                // Generate case ID
+                const caseId = 'CB' + Date.now().toString().slice(-6);
+                document.getElementById('generatedCaseId').textContent = caseId;
+                
+                // Show success message
+                document.getElementById('reportSuccess').style.display = 'block';
+                
+                // Add to evidence log for dashboard
+                const formData = new FormData(e.target);
+                const reportType = formData.get('reportType');
+                const logEntry = {
+                    id: caseId,
+                    userId: reportType === 'anonymous' ? 'ANONYMOUS' : 'REG_' + Math.floor(Math.random() * 10000),
+                    text: formData.get('incidentDescription').substring(0, 100) + '...',
+                    severity: formData.get('incidentType'),
+                    confidence: 0.98, // High confidence for human reports
+                    timestamp: new Date().toISOString(),
+                    actions: ['Report Filed', 'Under Investigation'],
+                    platform: formData.get('platform'),
+                    reportType: reportType
+                };
+                
+                evidenceLog.push(logEntry);
+                updateStatistics();
+                
+                // Scroll to success message
+                document.getElementById('reportSuccess').scrollIntoView({ behavior: 'smooth' });
+                
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                
+                // Clear form after successful submission
+                setTimeout(() => {
+                    if (confirm('Report submitted successfully! Would you like to clear the form?')) {
+                        clearForm();
+                    }
+                }, 2000);
+                
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
